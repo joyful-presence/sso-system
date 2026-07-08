@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Account | Joyfully Present Account</title>
+<link rel="icon" href="https://joyfullypresent.life/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,450;9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="booking.css">
+</head>
+<body>
+
+<main>
+  <section class="page-hero">
+    <div class="wrap">
+      <a href="https://joyfullypresent.life" style="display:inline-flex; align-items:center; gap:10px; text-decoration:none; margin-bottom:20px;">
+        <img src="https://joyfullypresent.life/logo.png" alt="Joyfully Present" style="height:32px;">
+      </a>
+      <span class="eyebrow">Your Account</span>
+      <h1>Create your account</h1>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap narrow">
+      <div id="error-box"></div>
+
+      <div class="form-group">
+        <label for="name">Full name</label>
+        <input type="text" id="name" required>
+      </div>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" required>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" required minlength="8">
+        <span class="small-note">At least 8 characters.</span>
+      </div>
+
+      <button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="doSignup()">Create Account</button>
+
+      <p class="small-note" style="text-align:center; margin-top:22px;">
+        Already have an account? <a href="#" id="login-link">Sign in</a>
+      </p>
+    </div>
+  </section>
+</main>
+
+<script src="sso-config.js"></script>
+<script>
+const params = new URLSearchParams(location.search);
+const returnTo = params.get("return_to") || "";
+document.getElementById("login-link").href = `login.html?return_to=${encodeURIComponent(returnTo)}`;
+
+function showError(msg) {
+  document.getElementById("error-box").innerHTML = msg ? `<div class="error-note">${msg}</div>` : "";
+}
+
+async function doSignup() {
+  showError("");
+  const name = document.getElementById("name").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+  if (!name || !email || password.length < 8) { showError("Please fill in every field — password needs at least 8 characters."); return; }
+
+  const res = await fetch(`${SSO_API_BASE}/signup`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, email, password }),
+  });
+  const data = await res.json();
+  if (!res.ok) { showError(data.error || "Could not create account."); return; }
+
+  location.href = `${SSO_API_BASE}/authorize?return_to=${encodeURIComponent(returnTo)}`;
+}
+</script>
+
+</body>
+</html>
