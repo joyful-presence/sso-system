@@ -62,7 +62,6 @@ async function doLogin() {
   const password = document.getElementById("password").value;
   if (!email || !password) { showError("Please enter your email and password."); return; }
 
-  // 1. Submit login information
   const res = await fetch(`${SSO_API_BASE}/login`, {
     method: "POST",
     credentials: "include",
@@ -72,25 +71,8 @@ async function doLogin() {
   const data = await res.json();
   if (!res.ok) { showError(data.error || "Sign in failed."); return; }
 
-  // 2. Fetch the authorization link safely via JavaScript instead of navigating directly to it
-  try {
-    const authRes = await fetch(`${SSO_API_BASE}/authorize?return_to=${encodeURIComponent(returnTo)}`, {
-      credentials: "include" // Keeps the newly logged-in cookie session!
-    });
-    const authData = await authRes.json();
-
-    // 3. Follow the redirect URL provided by your Worker
-    if (authData.redirect) {
-      location.href = authData.url;
-    } else if (authData.error) {
-      showError(authData.error);
-    } else {
-      showError("An authorization error occurred.");
-    }
-  } catch (err) {
-    console.error(err);
-    showError("Could not complete single sign-on redirect.");
-  }
+  // Signed in on the accounts site — now hand off back to whichever app sent us here.
+  location.href = `${SSO_API_BASE}/authorize?return_to=${encodeURIComponent(returnTo)}`;
 }
 </script>
 
